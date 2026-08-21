@@ -37,6 +37,7 @@ import {
 import type { NodeStatus, ScenarioRunStatusResponse, ClusterJobPhase } from '../types/api';
 import { operatorApi } from '../services';
 import { LogViewer } from './LogViewer';
+import { JobSummaryDownload } from './JobSummaryDownload';
 
 interface NodeDetailModalProps {
   /** Node status from GraphRun */
@@ -394,22 +395,34 @@ export function NodeDetailModal({ nodeStatus, onClose }: NodeDetailModalProps) {
                         />
                       </DataListItemRow>
 
-                      {/* Job Logs (expanded) */}
+                      {/* Job Summary and Logs (expanded) */}
                       <DataListContent
-                        aria-label={`Logs for job ${job.jobId}`}
+                        aria-label={`Summary and logs for job ${job.jobId}`}
                         id={`expand-job-${job.jobId}`}
                         isHidden={!isJobExpanded}
                       >
                         {isJobExpanded && job.podName && (
                           <div style={{ paddingLeft: '2rem' }}>
-                            <LogViewer
-                              scenarioRunName={scenarioRun.scenarioRunName}
-                              jobId={job.jobId}
-                              clusterName={job.clusterName}
-                              podName={job.podName}
-                              status={job.phase}
-                              compact
-                            />
+                            <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsSm' }}>
+                              <FlexItem>
+                                <JobSummaryDownload
+                                  scenarioRunName={scenarioRun.scenarioRunName}
+                                  jobId={job.jobId}
+                                  status={job.phase}
+                                  podName={job.podName}
+                                />
+                              </FlexItem>
+                              <FlexItem>
+                                <LogViewer
+                                  scenarioRunName={scenarioRun.scenarioRunName}
+                                  jobId={job.jobId}
+                                  clusterName={job.clusterName}
+                                  podName={job.podName}
+                                  status={job.phase}
+                                  compact
+                                />
+                              </FlexItem>
+                            </Flex>
                           </div>
                         )}
                       </DataListContent>

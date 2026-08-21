@@ -98,6 +98,95 @@ describe('OperatorApi - listUnifiedJobs', () => {
   });
 });
 
+describe('OperatorApi - downloadJobSummary', () => {
+  beforeEach(() => {
+    mockFetch.mockClear();
+    vi.stubGlobal('fetch', mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetAllMocks();
+  });
+
+  it('should download PDF summary successfully', async () => {
+    const mockBlob = new Blob(['PDF content'], { type: 'application/pdf' });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      blob: async () => mockBlob,
+    });
+
+    const result = await operatorApi.downloadJobSummary('run-001', 'job-123', 'pdf');
+
+    expect(result).toEqual(mockBlob);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const [url] = mockFetch.mock.calls[0];
+    expect(url).toContain('/scenarios/run/run-001/jobs/job-123/summary?format=pdf');
+  });
+
+  it('should download HTML summary successfully', async () => {
+    const mockBlob = new Blob(['<html>content</html>'], { type: 'text/html' });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      blob: async () => mockBlob,
+    });
+
+    const result = await operatorApi.downloadJobSummary('run-001', 'job-123', 'html');
+
+    expect(result).toEqual(mockBlob);
+    const [url] = mockFetch.mock.calls[0];
+    expect(url).toContain('/scenarios/run/run-001/jobs/job-123/summary?format=html');
+  });
+
+  it('should throw descriptive error on 404', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      json: async () => ({ message: 'Summary file not found' }),
+    });
+
+    await expect(operatorApi.downloadJobSummary('run-001', 'job-123', 'pdf'))
+      .rejects.toThrow('Summary file not found');
+  });
+
+  it('should throw default 404 error message when no message in response', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      json: async () => ({}),
+    });
+
+    await expect(operatorApi.downloadJobSummary('run-001', 'job-123', 'pdf'))
+      .rejects.toThrow('Summary not available — the run may still be in progress or the pod has been cleaned up');
+  });
+
+  it('should throw HTTP error on non-404 failures', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      json: async () => ({}),
+    });
+
+    await expect(operatorApi.downloadJobSummary('run-001', 'job-123', 'pdf'))
+      .rejects.toThrow('HTTP 500: Internal Server Error');
+  });
+
+  it('should encode URL parameters correctly', async () => {
+    const mockBlob = new Blob(['content'], { type: 'application/pdf' });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      blob: async () => mockBlob,
+    });
+
+    await operatorApi.downloadJobSummary('run/with/slashes', 'job#123', 'pdf');
+
+    const [url] = mockFetch.mock.calls[0];
+    expect(url).toContain('run%2Fwith%2Fslashes');
+    expect(url).toContain('job%23123');
+  });
+});
+
 describe('OperatorApi - getScenarioRunConfig', () => {
   beforeEach(() => {
     mockFetch.mockClear();

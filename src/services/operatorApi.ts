@@ -395,6 +395,31 @@ class OperatorApiClient extends BaseApiClient {
   }
 
   /**
+   * GET /api/v1/scenarios/run/{scenarioRunName}/jobs/{jobId}/summary?format=pdf|html
+   * Download a job summary report
+   * @param scenarioRunName - Scenario run name
+   * @param jobId - Job ID
+   * @param format - Format to download ('pdf' or 'html')
+   * @returns Promise with Blob of the file
+   * @throws Error if the file is not available or other errors occur
+   */
+  async downloadJobSummary(scenarioRunName: string, jobId: string, format: 'pdf' | 'html'): Promise<Blob> {
+    const response = await this.fetch(
+      `/scenarios/run/${encodeURIComponent(scenarioRunName)}/jobs/${encodeURIComponent(jobId)}/summary?format=${format}`
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        const error = await response.json();
+        throw new Error(error.message || 'Summary not available — the run may still be in progress or the pod has been cleaned up');
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+
+  /**
    * Validate targetClusters map for scenario run request
    * @param targetClusters - Map of provider names to cluster names arrays
    * @returns Array of validation error messages (empty if valid)

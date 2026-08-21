@@ -38,6 +38,7 @@ import {
 import { HiOutlineRocketLaunch } from 'react-icons/hi2';
 import { LogViewer } from './LogViewer';
 import { ScenarioConfigDisplay } from './ScenarioConfigDisplay';
+import { JobSummaryDownload } from './JobSummaryDownload';
 import { operatorApi } from '../services/operatorApi';
 import type { ScenarioRunStatusResponse, ClusterJobPhase } from '../types/api';
 
@@ -363,15 +364,31 @@ export function ScenarioRunDetailModal({ scenarioRunName, isOpen, onClose }: Sce
                                 </div>
                               </FlexItem>
 
-                              {/* Logs */}
+                              {/* Summary Download and Logs */}
                               <FlexItem>
-                                <LogViewer
-                                  scenarioRunName={run.scenarioRunName}
-                                  jobId={job.jobId}
-                                  clusterName={job.clusterName}
-                                  podName={job.podName}
-                                  status={job.phase}
-                                />
+                                <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsSm' }}>
+                                  <FlexItem>
+                                    <Flex spaceItems={{ default: 'spaceItemsSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                                      <FlexItem>
+                                        <JobSummaryDownload
+                                          scenarioRunName={run.scenarioRunName}
+                                          jobId={job.jobId}
+                                          status={job.phase}
+                                          podName={job.podName}
+                                        />
+                                      </FlexItem>
+                                    </Flex>
+                                  </FlexItem>
+                                  <FlexItem>
+                                    <LogViewer
+                                      scenarioRunName={run.scenarioRunName}
+                                      jobId={job.jobId}
+                                      clusterName={job.clusterName}
+                                      podName={job.podName}
+                                      status={job.phase}
+                                    />
+                                  </FlexItem>
+                                </Flex>
                               </FlexItem>
                             </Flex>
                           )}
