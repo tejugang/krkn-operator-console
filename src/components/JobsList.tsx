@@ -57,6 +57,7 @@ import { ActiveRunsSummary } from './ActiveRunsSummary';
 import { GraphRunDetail } from './GraphRunDetail';
 import { JobStatsSummary } from './JobStatsSummary';
 import { FileManagementModal } from './FileManagement';
+import { JobSummaryDownload } from './JobSummaryDownload';
 import { useRole } from '../hooks/useRole';
 import { useActiveRunsPoller } from '../hooks/useActiveRunsPoller';
 import { useJobs } from '../hooks/useJobs';
@@ -1232,6 +1233,19 @@ export function JobsList({
                                               </dl>
                                             </div>
                                           </FlexItem>
+
+                                          {/* Download Summary - only for completed jobs */}
+                                          {['Succeeded', 'Failed'].includes(job.phase) && job.jobId && (
+                                            <FlexItem>
+                                              <JobSummaryDownload
+                                                scenarioRunName={run.scenarioRunName}
+                                                jobId={job.jobId}
+                                                status={job.phase}
+                                                podName={job.podName}
+                                                dropdown={true}
+                                              />
+                                            </FlexItem>
+                                          )}
 
                                           {/* Logs for running, succeeded, and failed jobs */}
                                           {['Running', 'Succeeded', 'Failed'].includes(job.phase) && job.jobId && (
